@@ -41,8 +41,8 @@ app.get("/all-posts", (req, res) => {
 });
 app.post("/login", upload.none(), (req, res) => {
   console.log("login", req.body);
-  let name = req.body.username;
-  let pwd = req.body.password;
+  const name = req.body.username;
+  const pwd = req.body.password;
   dbo.collection("users").findOne({ username: name }, (err, user) => {
     if (err) {
       console.log("/login error", err);
@@ -62,12 +62,13 @@ app.post("/login", upload.none(), (req, res) => {
 });
 app.post("/new-post", upload.single("img"), (req, res) => {
   console.log("request to /new-post. body: ", req.body);
-  let description = req.body.description;
-  let file = req.file;
-  let frontendPath = "/uploads/" + file.filename;
+  const username = req.body.username;
+  const description = req.body.description;
+  const file = req.file;
+  const frontendPath = "/uploads/" + file.filename;
   dbo
     .collection("posts")
-    .insertOne({ description: description, frontendPath: frontendPath });
+    .insertOne({ username, description, frontendPath: frontendPath });
   res.send(JSON.stringify({ success: true }));
 });
 app.post("/update", upload.none(), (req, res) => {

@@ -1,10 +1,11 @@
 import React, { Component } from "react";
 class NewPost extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       file: "",
-      description: ""
+      description: "",
+      username: this.props.username
     };
   }
   descChangeHandler = e => {
@@ -16,6 +17,7 @@ class NewPost extends Component {
   submitHandler = evt => {
     evt.preventDefault();
     const data = new FormData();
+    data.append("username", this.state.username);
     data.append("img", this.state.file);
     data.append("description", this.state.description);
     fetch("/new-post", { method: "POST", body: data });

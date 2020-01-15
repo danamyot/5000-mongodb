@@ -19,6 +19,7 @@ class Post extends Component {
   render = () => {
     return (
       <form onSubmit={this.submitHandler}>
+        <p>{this.props.contents.username}</p>
         <input
           type="text"
           value={this.state.description}

@@ -9,8 +9,7 @@ class Content extends Component {
     };
   }
   reload = async () => {
-    const allPosts = (await fetch("/all-posts")).json();
-    console.log("/all-posts response", allPosts);
+    const allPosts = await (await fetch("/all-posts")).json();
     this.setState({ posts: allPosts });
   };
   render = () => {
@@ -22,7 +21,7 @@ class Content extends Component {
             <Post key={p._id} contents={p} />
           ))}
         </div>
-        <NewPost />
+        <NewPost username={this.props.username} />
       </div>
     );
   };

@@ -17,15 +17,12 @@ class App extends Component {
   };
   submitHandler = async evt => {
     evt.preventDefault();
-    console.log("username", this.state.username);
-    console.log("password", this.state.passwordInput);
     let name = this.state.usernameInput;
     let data = new FormData();
     data.append("username", name);
     data.append("password", this.state.passwordInput);
     let response = await fetch("/login", { method: "POST", body: data });
     let body = await response.text();
-    console.log("/login response", body);
     body = JSON.parse(body);
     if (body.success) {
       this.setState({ username: name });
@@ -44,7 +41,7 @@ class App extends Component {
         </form>
       );
     }
-    return <Content />;
+    return <Content username={this.state.username} />;
   };
 }
 

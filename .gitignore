@@ -5,9 +5,8 @@
 
 # production
 /dist
-
-
 /build
+
 # misc
 .DS_Store
 .env.local
@@ -21,3 +20,5 @@ yarn-error.log*
 package-lock.json
 yarn-lock.json
 yarn.lock
+
+config.json

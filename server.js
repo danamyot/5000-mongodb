@@ -1,19 +1,29 @@
-let express = require("express");
-let app = express();
-let MongoClient = require("mongodb").MongoClient;
-let ObjectID = require("mongodb").ObjectID;
-let reloadMagic = require("./reload-magic.js");
-let multer = require("multer");
-let upload = multer({ dest: __dirname + "/uploads/" });
+const CONFIG = require("./config.json");
+const express = require("express");
+const MongoClient = require("mongodb").MongoClient;
+const ObjectID = require("mongodb").ObjectID;
+const reloadMagic = require("./reload-magic.js");
+const multer = require("multer");
+const upload = multer({ dest: __dirname + "/uploads/" });
+
+const app = express();
 reloadMagic(app);
-app.use("/", express.static("build"));
-app.use("/uploads", express.static("uploads"));
+
 let dbo = undefined;
-let url =
-  "mongodb+srv://damyot:admin@cluster0-637cp.mongodb.net/test?retryWrites=true&w=majority";
-MongoClient.connect(url, { useNewUrlParser: true }, (err, db) => {
-  dbo = db.db("media-board");
-});
+const url = CONFIG.MONGODB_URL;
+
+MongoClient.connect(
+  url,
+  { useNewUrlParser: true, useUnifiedTopology: true },
+  (err, db) => {
+    dbo = db.db("media-board");
+  }
+);
+
+app.use("/", express.static("build"));
+
+app.use("/uploads", express.static("uploads"));
+
 app.get("/all-posts", (req, res) => {
   console.log("request to /all-posts");
   dbo
@@ -41,6 +51,7 @@ app.post("/login", upload.none(), (req, res) => {
     }
     if (user === null) {
       res.send(JSON.stringify({ success: false }));
+      return;
     }
     if (user.password === pwd) {
       res.send(JSON.stringify({ success: true }));

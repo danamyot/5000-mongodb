@@ -110,7 +110,13 @@ app.post("/update", upload.none(), (req, res) => {
 app.post("/delete-post", upload.none(), async (req, res) => {
   await dbo
     .collection("posts")
-    .deleteOne({ _id: ObjectID(req.body.postId) }, { justOne: true });
+    .remove({ _id: ObjectID(req.body.postId) }, { justOne: true });
+  return res.send(JSON.stringify({ success: true }));
+});
+
+app.post("/delete-all-posts", upload.none(), async (req, res) => {
+  console.log("request to /delete-all-posts");
+  await dbo.collection("posts").remove({});
   return res.send(JSON.stringify({ success: true }));
 });
 

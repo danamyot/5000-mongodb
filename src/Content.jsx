@@ -13,10 +13,13 @@ class Content extends Component {
     this.setState({ posts: allPosts });
   };
   deletePost = async postId => {
-    console.log(postId);
     let data = new FormData();
     data.append("postId", postId);
     await fetch("/delete-post", { method: "POST", body: data });
+    this.reload();
+  };
+  deleteAllPosts = async () => {
+    await fetch("/delete-all-posts", { method: "POST" });
     this.reload();
   };
   render = () => {
@@ -29,6 +32,7 @@ class Content extends Component {
           ))}
         </div>
         <NewPost username={this.props.username} />
+        <button onClick={this.deleteAllPosts}>Delete all posts</button>
       </div>
     );
   };

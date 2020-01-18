@@ -31,7 +31,7 @@ class Content extends Component {
             <Post key={p._id} contents={p} deletePost={this.deletePost} />
           ))}
         </div>
-        <NewPost username={this.props.username} />
+        <NewPost reload={this.reload} username={this.props.username} />
         <button onClick={this.deleteAllPosts}>Delete all posts</button>
       </div>
     );

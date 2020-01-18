@@ -1,12 +1,13 @@
 import React, { Component } from "react";
+
+const initialState = {
+  file: "",
+  description: ""
+};
 class NewPost extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      file: "",
-      description: "",
-      username: this.props.username
-    };
+    this.state = initialState;
   }
   descChangeHandler = e => {
     this.setState({ description: e.target.value });
@@ -14,13 +15,16 @@ class NewPost extends Component {
   fileChangeHandler = e => {
     this.setState({ file: e.target.files[0] });
   };
-  submitHandler = evt => {
+  submitHandler = async evt => {
     evt.preventDefault();
+    evt.target.reset();
     const data = new FormData();
-    data.append("username", this.state.username);
+    data.append("username", this.props.username);
     data.append("img", this.state.file);
     data.append("description", this.state.description);
-    fetch("/new-post", { method: "POST", body: data });
+    await fetch("/new-post", { method: "POST", body: data });
+    this.setState(initialState);
+    this.props.reload();
   };
   render = () => {
     return (

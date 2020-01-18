@@ -56,7 +56,6 @@ class App extends Component {
     if (session.success) {
       this.setState({ username: session.username });
     }
-    debugger;
   };
   render = () => {
     if (this.state.username === undefined) {

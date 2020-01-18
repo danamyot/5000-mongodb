@@ -2,11 +2,13 @@ const CONFIG = require("./config.json");
 const express = require("express");
 const MongoClient = require("mongodb").MongoClient;
 const ObjectID = require("mongodb").ObjectID;
-const reloadMagic = require("./reload-magic.js");
 const multer = require("multer");
 const upload = multer({ dest: __dirname + "/uploads/" });
+const cookieParser = require("cookie-parser");
+const reloadMagic = require("./reload-magic.js");
 
 const app = express();
+app.use(cookieParser());
 reloadMagic(app);
 
 let dbo = undefined;
@@ -24,42 +26,77 @@ app.use("/", express.static("build"));
 
 app.use("/uploads", express.static("uploads"));
 
+app.get("/session", async (req, res) => {
+  const userSession = req.cookies.sid;
+  const serverSession = await dbo
+    .collection("sessions")
+    .findOne({ id: userSession });
+  if (serverSession) {
+    const username = serverSession.username;
+    return res.send(JSON.stringify({ success: true, username }));
+  }
+  res.send(JSON.stringify({ success: false }));
+});
+
 app.get("/all-posts", (req, res) => {
   console.log("request to /all-posts");
-  dbo
-    .collection("posts")
-    .find({})
-    .toArray((err, ps) => {
-      if (err) {
-        console.log("error", err);
-        res.send("fail");
-        return;
-      }
-      console.log("posts", ps);
-      res.send(JSON.stringify(ps));
-    });
+  dbo.collection("posts").findOne({}, (err, ps) => {
+    if (err) {
+      console.log("error", err);
+      res.send("fail");
+      return;
+    }
+    console.log("posts", ps);
+    res.send(JSON.stringify(ps));
+  });
 });
+
+app.post("/signup", upload.none(), async (req, res) => {
+  let username = req.body.username;
+  let pwd = req.body.password;
+  try {
+    const existingUser = await dbo.collection("users").findOne({ username });
+    if (existingUser) {
+      return res.send(
+        JSON.stringify({
+          success: false,
+          error: "Signup failed, user already exists"
+        })
+      );
+    }
+    const newUser = await dbo
+      .collection("users")
+      .insertOne({ username: username, password: pwd });
+    const sessionID = newUser.insertedId.toString();
+    res.cookie("sid", sessionID);
+    res.send(JSON.stringify({ success: true }));
+    dbo.collection("sessions").insertOne({ id: sessionID, username: username });
+    return;
+  } catch (error) {
+    console.log("/signup error", error);
+    return res.send(JSON.stringify({ success: false }));
+  }
+});
+
 app.post("/login", upload.none(), (req, res) => {
-  console.log("login", req.body);
   const name = req.body.username;
   const pwd = req.body.password;
   dbo.collection("users").findOne({ username: name }, (err, user) => {
     if (err) {
       console.log("/login error", err);
-      res.send(JSON.stringify({ success: false }));
-      return;
+      return res.send(JSON.stringify({ success: false }));
     }
     if (user === null) {
-      res.send(JSON.stringify({ success: false }));
-      return;
+      return res.send(JSON.stringify({ success: false }));
     }
     if (user.password === pwd) {
-      res.send(JSON.stringify({ success: true }));
-      return;
+      res.cookie("sid", user._id.toString());
+      return res.send(JSON.stringify({ success: true }));
     }
-    res.send(JSON.stringify({ success: false }));
+    return res.send(JSON.stringify({ success: false }));
   });
 });
+
 app.post("/new-post", upload.single("img"), (req, res) => {
   console.log("request to /new-post. body: ", req.body);
   const username = req.body.username;
@@ -71,6 +108,7 @@ app.post("/new-post", upload.single("img"), (req, res) => {
     .insertOne({ username, description, frontendPath: frontendPath });
   res.send(JSON.stringify({ success: true }));
 });
+
 app.post("/update", upload.none(), (req, res) => {
   console.log("request to /update");
   let id = req.body.id.toString();
@@ -81,9 +119,11 @@ app.post("/update", upload.none(), (req, res) => {
     .updateOne({ _id: ObjectID(id) }, { $set: { description: desc } });
   res.send("success");
 });
+
 app.all("/*", (req, res, next) => {
   res.sendFile(__dirname + "/build/index.html");
 });
+
 app.listen(4000, "0.0.0.0", () => {
   console.log("Server running on port 4000");
 });

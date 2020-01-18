@@ -38,28 +38,6 @@ app.get("/session", async (req, res) => {
   res.send(JSON.stringify({ success: false }));
 });
 
-app.get("/all-posts", (req, res) => {
-  console.log("request to /all-posts");
-  dbo
-    .collection("posts")
-    .find({})
-    .toArray((err, ps) => {
-      if (err) {
-        console.log("error", err);
-        res.send("fail");
-        return;
-      }
-      res.send(JSON.stringify(ps));
-    });
-});
-
-app.post("/delete-post", upload.none(), async (req, res) => {
-  await dbo
-    .collection("posts")
-    .deleteOne({ _id: ObjectID(req.body.postId) }, { justOne: true });
-  return res.send(JSON.stringify({ success: true }));
-});
-
 app.post("/signup", upload.none(), async (req, res) => {
   let username = req.body.username;
   let pwd = req.body.password;
@@ -127,6 +105,28 @@ app.post("/update", upload.none(), (req, res) => {
     .collection("posts")
     .updateOne({ _id: ObjectID(id) }, { $set: { description: desc } });
   res.send("success");
+});
+
+app.post("/delete-post", upload.none(), async (req, res) => {
+  await dbo
+    .collection("posts")
+    .deleteOne({ _id: ObjectID(req.body.postId) }, { justOne: true });
+  return res.send(JSON.stringify({ success: true }));
+});
+
+app.get("/all-posts", (req, res) => {
+  console.log("request to /all-posts");
+  dbo
+    .collection("posts")
+    .find({})
+    .toArray((err, ps) => {
+      if (err) {
+        console.log("error", err);
+        res.send("fail");
+        return;
+      }
+      res.send(JSON.stringify(ps));
+    });
 });
 
 app.all("/*", (req, res, next) => {

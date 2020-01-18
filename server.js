@@ -40,15 +40,24 @@ app.get("/session", async (req, res) => {
 
 app.get("/all-posts", (req, res) => {
   console.log("request to /all-posts");
-  dbo.collection("posts").findOne({}, (err, ps) => {
-    if (err) {
-      console.log("error", err);
-      res.send("fail");
-      return;
-    }
-    console.log("posts", ps);
-    res.send(JSON.stringify(ps));
-  });
+  dbo
+    .collection("posts")
+    .find({})
+    .toArray((err, ps) => {
+      if (err) {
+        console.log("error", err);
+        res.send("fail");
+        return;
+      }
+      res.send(JSON.stringify(ps));
+    });
+});
+
+app.post("/delete-post", upload.none(), async (req, res) => {
+  await dbo
+    .collection("posts")
+    .deleteOne({ _id: ObjectID(req.body.postId) }, { justOne: true });
+  return res.send(JSON.stringify({ success: true }));
 });
 
 app.post("/signup", upload.none(), async (req, res) => {

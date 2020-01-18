@@ -27,6 +27,11 @@ class Post extends Component {
         />
         <img src={this.props.contents.frontendPath} />
         <input type="submit" value="update" />
+        <input
+          type="button"
+          value="delete"
+          onClick={() => this.props.deletePost(this.props.contents._id)}
+        />
       </form>
     );
   };

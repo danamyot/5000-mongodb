@@ -12,13 +12,20 @@ class Content extends Component {
     const allPosts = await (await fetch("/all-posts")).json();
     this.setState({ posts: allPosts });
   };
+  deletePost = async postId => {
+    console.log(postId);
+    let data = new FormData();
+    data.append("postId", postId);
+    await fetch("/delete-post", { method: "POST", body: data });
+    this.reload();
+  };
   render = () => {
     return (
       <div>
         <button onClick={this.reload}> load </button>
         <div>
           {this.state.posts.map(p => (
-            <Post key={p._id} contents={p} />
+            <Post key={p._id} contents={p} deletePost={this.deletePost} />
           ))}
         </div>
         <NewPost username={this.props.username} />
